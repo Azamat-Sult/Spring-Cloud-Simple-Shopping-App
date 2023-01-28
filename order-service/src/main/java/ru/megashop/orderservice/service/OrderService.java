@@ -2,6 +2,7 @@ package ru.megashop.orderservice.service;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import ru.megashop.orderservice.dto.OrderLineItemsDto;
 import ru.megashop.orderservice.dto.OrderRequest;
 import ru.megashop.orderservice.model.Order;
@@ -12,6 +13,7 @@ import java.util.List;
 import java.util.UUID;
 
 @Service
+@Transactional
 @RequiredArgsConstructor
 public class OrderService {
 

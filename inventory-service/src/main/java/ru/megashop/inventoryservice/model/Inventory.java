@@ -1,24 +1,21 @@
-package ru.megashop.orderservice.model;
+package ru.megashop.inventoryservice.model;
 
 import jakarta.persistence.*;
 import lombok.*;
 
-import java.math.BigDecimal;
-
 @Entity
-@Table(name = "t_order_line_items")
+@Table(name = "t_inventory")
 @Getter
 @Setter
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class OrderLineItems {
+public class Inventory {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     private String skuCode;
-    private BigDecimal price;
     private int quantity;
 
 }
