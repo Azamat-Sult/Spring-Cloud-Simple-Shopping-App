@@ -1,9 +1,11 @@
 package ru.megashop.orderservice.service;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.client.reactive.ReactorClientHttpConnector;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.reactive.function.client.WebClient;
+import reactor.netty.http.client.HttpClient;
 import ru.megashop.orderservice.dto.InventoryResponse;
 import ru.megashop.orderservice.dto.OrderLineItemsDto;
 import ru.megashop.orderservice.dto.OrderRequest;
@@ -11,6 +13,7 @@ import ru.megashop.orderservice.model.Order;
 import ru.megashop.orderservice.model.OrderLineItems;
 import ru.megashop.orderservice.repository.OrderRepository;
 
+import java.time.Duration;
 import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
@@ -23,7 +26,7 @@ public class OrderService {
     private final OrderRepository orderRepository;
     private final WebClient.Builder webClientBuilder;
 
-    public void placeOrder(OrderRequest orderRequest) {
+    public String placeOrder(OrderRequest orderRequest) {
 
         List<OrderLineItems> orderLineItems = orderRequest.getOrderLineItemsDtoList().stream()
                 .map(this::mapToDto)
@@ -37,7 +40,12 @@ public class OrderService {
                 .map(OrderLineItems::getSkuCode)
                 .toList();
 
-        InventoryResponse[] inventoryResponseArray = webClientBuilder.build().get()
+        InventoryResponse[] inventoryResponseArray = webClientBuilder
+                .clientConnector(new ReactorClientHttpConnector(HttpClient
+                        .create()
+                        .responseTimeout(Duration.ofMillis(4000))))
+                .build()
+                .get()
                 .uri("http://inventory-service/api/inventory",
                         uriBuilder -> uriBuilder.queryParam("skuCode", skuCodes).build())
                 .retrieve()
@@ -49,6 +57,7 @@ public class OrderService {
 
         if (allProductsInStock) {
             orderRepository.save(order);
+            return "Order placed successfully";
         } else {
             throw new IllegalArgumentException("Product is not in stock, please try again later");
         }
