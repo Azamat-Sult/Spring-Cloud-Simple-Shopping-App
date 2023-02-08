@@ -64,15 +64,16 @@ public class OrderService {
                     .bodyToMono(InventoryResponse[].class)
                     .block();
 
-            boolean allProductsInStock = Arrays.stream(inventoryResponseArray)
-                    .allMatch(InventoryResponse::isInStock);
+            boolean allProductsInStock = inventoryResponseArray != null &&
+                    inventoryResponseArray.length != 0 &&
+                    Arrays.stream(inventoryResponseArray).allMatch(InventoryResponse::isInStock);
 
             if (allProductsInStock) {
                 orderRepository.save(order);
                 kafkaTemplate.send("notificationTopic", new OrderPlacedEvent(order.getOrderNumber()));
                 return "Order placed successfully";
             } else {
-                throw new IllegalArgumentException("Product is not in stock, please try again later");
+                return "Product is not in stock, please try again later";
             }
 
         } finally {

@@ -25,12 +25,16 @@ public class InventoryService {
 //        Thread.sleep(10000);
 //        log.info("Wait ended");
 
-        return inventoryRepository.findBySkuCodeIn(skuCode).stream()
+        var found = inventoryRepository.findBySkuCodeIn(skuCode).stream()
                 .map(inventory -> InventoryResponse.builder()
                         .skuCode(inventory.getSkuCode())
                         .isInStock(inventory.getQuantity() > 0)
                         .build())
                 .toList();
+
+        found.forEach(System.out::println);
+
+        return found;
     }
 
 }
